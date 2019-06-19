@@ -287,10 +287,10 @@ always @(posedge CLK_50M) begin :thrust_count
 
 	if (thrust_count == 'd196_850) begin
 		thrust_count <= 0;
-		if ((joy[2]|btn_up) && dpad_thrust > 0)
+		if ((joy[2]|btn_down) && dpad_thrust > 0)
 			dpad_thrust <= dpad_thrust - 1'd1;
 
-		if ((joy[3]|btn_down) && dpad_thrust < 'd254)
+		if ((joy[3]|btn_up) && dpad_thrust < 'd254)
 			dpad_thrust <= dpad_thrust + 1'd1;
 	end
 end
