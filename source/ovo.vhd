@@ -26,6 +26,8 @@ ENTITY ovo IS
     i_hs  : IN  std_logic;
     i_vs  : IN  std_logic;
     i_de  : IN  std_logic;
+    i_hblank   : IN  std_logic;
+    i_vblank  : IN  std_logic;
     i_en  : IN  std_logic;
     i_clk : IN  std_logic;
 
@@ -36,6 +38,8 @@ ENTITY ovo IS
     o_hs  : OUT std_logic;
     o_vs  : OUT std_logic;
     o_de  : OUT std_logic;
+    o_hblank  : OUT std_logic;
+    o_vblank  : OUT std_logic;
 
     -- Control
     ena  : IN std_logic; -- Overlay ON/OFF
@@ -88,7 +92,7 @@ ARCHITECTURE rtl OF ovo IS
   SIGNAL vin0,vin1 : unsigned(0 TO COLS*5-1);
   
   SIGNAL t_r,t_g,t_b : uv8;
-  SIGNAL t_hs,t_vs,t_de : std_logic;
+  SIGNAL t_hs,t_vs,t_de, t_hblank, t_vblank : std_logic;
 
   SIGNAL col : uv8;
   SIGNAL de : std_logic;
@@ -114,6 +118,8 @@ BEGIN
         t_hs<=i_hs;
         t_vs<=i_vs;
         t_de<=i_de;
+        t_hblank<=i_hblank;
+        t_vblank<=i_vblank;
         
         o_r<=t_r;
         o_g<=t_g;
@@ -121,6 +127,8 @@ BEGIN
         o_hs<=t_hs;
         o_vs<=t_vs;
         o_de<=t_de;
+        o_hblank<=t_hblank;
+        o_vblank<=t_vblank;
         
         ----------------------------------
         -- Latch sampled values during vertical sync

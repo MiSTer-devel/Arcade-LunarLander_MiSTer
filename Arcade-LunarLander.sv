@@ -78,10 +78,9 @@ assign HDMI_ARY = status[1] ? 8'd9  : 8'd3;
 `include "build_id.v" 
 localparam CONF_STR = {
 	"A.LLANDER;;",
-	"OD,Thruster,Analog Stick,D-Pad;",
+	"H0O1,Aspect Ratio,Original,Wide;",
 	"-;",
-	"O1,Aspect Ratio,Original,Wide;",
-	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+	"OD,Thruster,Analog Stick,D-Pad;",
 	"-;",
 	"O7,Test,Off,On;",
 	"O89,Language,English,Spanish,French,German;",
@@ -89,6 +88,7 @@ localparam CONF_STR = {
 	"-;",
 	"R0,Reset;",
 	"J1,Start,Select,Coin,Abort,Turn Right,Turn Left;",	
+        "jn,Start,Select,X,A,L,R;",
 	"V,v",`BUILD_DATE
 };
 // 00010000
@@ -99,16 +99,16 @@ wire [7:0] m_dip = {1'b0,1'b0,status[8],status[9],~status[10],1'b1,status[11],st
 
 ////////////////////   CLOCKS   ///////////////////
 
-wire clk_6, clk_25,clk_24;
+wire clk_6, clk_25,clk_50;
 wire pll_locked;
 
 pll pll
 (
 	.refclk(CLK_50M),
 	.rst(0),
-	.outclk_0(clk_6),	
+	.outclk_0(clk_50),	
 	.outclk_1(clk_25),	
-	.outclk_2(clk_24),	
+	.outclk_2(clk_6),	
 	.locked(pll_locked)
 );
 
@@ -118,6 +118,7 @@ pll pll
 wire [31:0] status;
 wire  [1:0] buttons;
 wire        forced_scandoubler;
+wire        direct_video;
 
 wire        ioctl_download;
 wire        ioctl_wr;
@@ -137,10 +138,13 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 
 	.conf_str(CONF_STR),
 
-	.buttons(buttons),
-	.status(status),
-	.forced_scandoubler(forced_scandoubler),
-	.gamma_bus(gamma_bus),
+
+        .buttons(buttons),
+        .status(status),
+        .status_menumask(direct_video),
+        .forced_scandoubler(forced_scandoubler),
+        .gamma_bus(gamma_bus),
+        .direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
 	.ioctl_wr(ioctl_wr),
@@ -196,11 +200,40 @@ reg btn_gselect =0;
 reg btn_start_1=0;
 
 wire hblank, vblank;
+wire ohblank, ovblank;
 
-wire ce_vid = 1; 
 wire hs, vs;
-wire [2:0] r,g;
-wire [2:0] b;
+wire ohs, ovs;
+wire [2:0] r,g,b;
+wire [7:0] outr,outg,outb;
+
+
+
+reg ce_pix;
+always @(posedge clk_50) begin
+       ce_pix <= !ce_pix;
+end
+
+arcade_video #(640,480,12) arcade_video
+(
+        .*,
+
+        .clk_video(clk_50),
+
+        .RGB_in({outr[7:5],outg[7:5],outb[7:5]}),
+
+        .HBlank(ohblank),
+        .VBlank(ovblank),
+        .HSync(ohs),
+        .VSync(ovs),
+
+        .forced_scandoubler(0),
+        .no_rotate(1),
+        .rotate_ccw(0),
+        .fx(0)
+);
+
+
 
 ovo #(.COLS(1), .LINES(1), .RGB(24'hFF00FF)) diff (
 	.i_r({r,r,r[2:1]}),
@@ -209,15 +242,19 @@ ovo #(.COLS(1), .LINES(1), .RGB(24'hFF00FF)) diff (
 	.i_hs(~hs),
 	.i_vs(~vs),
 	.i_de(vgade),
-	.i_en(ce_vid),
-	.i_clk(clk_25),
+	.i_hblank(hblank),
+	.i_vblank(vblank),
+	.i_en(ce_pix),
+	.i_clk(clk_50),
 
-	.o_r(VGA_R),
-	.o_g(VGA_G),
-	.o_b(VGA_B),
-	.o_hs(VGA_HS),
-	.o_vs(VGA_VS),
-	.o_de(VGA_DE),
+	.o_r(outr),
+	.o_g(outg),
+	.o_b(outb),
+	.o_hs(ohs),
+	.o_vs(ovs),
+	.o_de(ode),
+	.o_hblank(ohblank),
+	.o_vblank(ovblank),
 
 	.ena(diff_count > 0),
 
@@ -248,25 +285,6 @@ always @(posedge CLK_50M) begin
 	if (~in_select)
 		diff_count <= 'd500_000_000; // 10 seconds
 end
-
-assign VGA_CLK  = clk_25; 
-assign VGA_CE   = ce_vid;
-// assign VGA_R    = {r,r,r[2:1]};
-// assign VGA_G    = {g,g,g[2:1]};
-// assign VGA_B    = {b,b,b[2:1]};
-// assign VGA_HS   = ~hs;
-// assign VGA_VS   = ~vs;
-// assign VGA_DE   = vgade;
-
-assign HDMI_CLK = VGA_CLK;
-assign HDMI_CE  = VGA_CE;
-assign HDMI_R   = VGA_R ;
-assign HDMI_G   = VGA_G ;
-assign HDMI_B   = VGA_B ;
-assign HDMI_DE  = VGA_DE;
-assign HDMI_HS  = VGA_HS;
-assign HDMI_VS  = VGA_VS;
-assign HDMI_SL  = 2'd0;
 
 
 wire reset = (RESET | status[0] | buttons[1] | ioctl_download);
