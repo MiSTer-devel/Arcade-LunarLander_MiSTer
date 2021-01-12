@@ -106,7 +106,7 @@ localparam CONF_STR = {
 	"-;",
 	"R0,Reset;",
 	"J1,Start,Select,Coin,Abort,Turn Right,Turn Left;",	
-        "jn,Start,Select,X,A,L,R;",
+    "jn,Start,Select,X,A,L,R;",
 	"V,v",`BUILD_DATE
 };
 // 00010000
@@ -155,12 +155,12 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	.conf_str(CONF_STR),
 
 
-        .buttons(buttons),
-        .status(status),
-        .status_menumask(direct_video),
-        .forced_scandoubler(forced_scandoubler),
-        .gamma_bus(gamma_bus),
-        .direct_video(direct_video),
+	.buttons(buttons),
+	.status(status),
+	.status_menumask(direct_video),
+	.forced_scandoubler(forced_scandoubler),
+	.gamma_bus(gamma_bus),
+	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
 	.ioctl_wr(ioctl_wr),
@@ -187,6 +187,15 @@ reg ce_pix;
 always @(posedge clk_50) begin
        ce_pix <= !ce_pix;
 end
+reg [3:0] r2;
+reg [3:0] g2;
+reg [3:0] b2;
+
+always @(posedge clk_50) begin
+    r2<=outr[7:5];
+	 g2<=outg[7:5];
+    b2<=outb[7:5];
+end
 
 arcade_video #(640,12) arcade_video
 (
@@ -194,7 +203,7 @@ arcade_video #(640,12) arcade_video
 
         .clk_video(clk_50),
 
-        .RGB_in({outr[7:5],outg[7:5],outb[7:5]}),
+        .RGB_in({r2,g2,b2}),
 
         .HBlank(ohblank),
         .VBlank(ovblank),
