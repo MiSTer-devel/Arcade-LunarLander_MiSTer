@@ -87,8 +87,9 @@ localparam CONF_STR = {
 	"OAC,Fuel,450,600,750,900,1100,1300,1550,1800;",
 	"-;",
 	"R0,Reset;",
-	"J1,Start,Select,Coin,Abort,Turn Right,Turn Left;",	
-        "jn,Start,Select,X,A,L,R;",
+	"J1,Abort,Turn Right,Turn Left,Start,Select,Coin;",	
+    "jn,X,A,B,Start,L,R;",
+	"jp,Y,B,A,Start,,Select;",
 	"V,v",`BUILD_DATE
 };
 // 00010000
