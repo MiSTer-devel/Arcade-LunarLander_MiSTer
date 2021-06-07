@@ -89,7 +89,7 @@ localparam CONF_STR = {
 	"R0,Reset;",
 	"J1,Abort,Turn Right,Turn Left,Start,Select,Coin;",	
     "jn,X,A,B,Start,L,R;",
-	"jp,Y,B,A,Start,,Select;",
+	"jp,Y,B,A,Start,L,R;",
 	"V,v",`BUILD_DATE
 };
 // 00010000
