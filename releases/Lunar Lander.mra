@@ -2,8 +2,9 @@
 	<name>Lunar Lander (rev 2)</name>
 	<mameversion>0220</mameversion>
 	<setname>llander</setname>
-	<mratimestamp>20200427161917</mratimestamp>
+	<mratimestamp>20221211004811</mratimestamp>
 	<year>1979</year>
+	<rotation>horizontal</rotation>
 	<manufacturer>Atari</manufacturer>
 	<category>Space / Moon</category>
 	<rbf>lunarlander</rbf>
